@@ -1,0 +1,16 @@
+[
+{
+  "modid": "entityspring",
+  "name": "Entity Spring",
+  "description": "Link entities together with springs!",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["jglrxavpok"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
