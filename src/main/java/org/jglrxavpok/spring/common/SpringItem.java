@@ -32,8 +32,8 @@ public class SpringItem extends Item {
 
     // because 'itemInteractionForEntity' is only for Living entities
     public void onUsedOnEntity(ItemStack stack, EntityPlayer player, World world, Entity target) {
-        if(world.isRemote)
-            return;
+      /*  if(world.isRemote)
+            return;*/
         if(player.isSneaking()) {
             // delete attached springs
             EntitySpring.streamSpringsAttachedTo(EntitySpring.SpringSide.DOMINANT, target).forEach(Entity::setDead);

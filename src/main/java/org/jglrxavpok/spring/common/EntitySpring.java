@@ -6,10 +6,12 @@ import net.minecraft.block.BlockRailBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
@@ -19,14 +21,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
 
-    public static int MAX_TICKS_WITH_NO_LINKS = 20;
+    public static final DataParameter<Integer> DOMINANT_ID = EntityDataManager.createKey(EntitySpring.class, DataSerializers.VARINT);
+    public static final DataParameter<Integer> DOMINATED_ID = EntityDataManager.createKey(EntitySpring.class, DataSerializers.VARINT);
 
-    private int ticksAliveWithNoLinks = 0;
-
+    private @Nullable NBTTagCompound dominantNBT;
+    private @Nullable NBTTagCompound dominatedNBT;
     @Nullable
     public Entity dominant;
     @Nullable
@@ -63,16 +67,38 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
 
     @Override
     protected void entityInit() {
+        dataManager.register(DOMINANT_ID, -1);
+        dataManager.register(DOMINATED_ID, -1);
     }
 
     @Override
     protected void readEntityFromNBT(NBTTagCompound compound) {
-        readNBT(SpringSide.DOMINANT, compound);
-        readNBT(SpringSide.DOMINATED, compound);
+        dominantNBT = compound.getCompoundTag(SpringSide.DOMINANT.name());
+        dominatedNBT = compound.getCompoundTag(SpringSide.DOMINATED.name());
     }
 
     public static Vec3d calculateAnchorPosition(Entity entity, SpringSide side) {
         return EntitySpringAPI.calculateAnchorPosition(entity, side);
+    }
+
+    @Override
+    public void notifyDataManagerChange(DataParameter<?> key) {
+        super.notifyDataManagerChange(key);
+
+        if(world.isRemote) {
+            if(DOMINANT_ID.equals(key)) {
+                Entity potential = world.getEntityByID(dataManager.get(DOMINANT_ID));
+                if(potential != null) {
+                    dominant = potential;
+                }
+            }
+            if(DOMINATED_ID.equals(key)) {
+                Entity potential = world.getEntityByID(dataManager.get(DOMINATED_ID));
+                if(potential != null) {
+                    dominated = potential;
+                }
+            }
+        }
     }
 
     @Override
@@ -81,11 +107,14 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
         motionY = 0.0;
         motionZ = 0.0;
         super.onEntityUpdate();
-        if(dominant != null && dominated != null && !dominant.isDead && !dominated.isDead) {
+        if(dominant != null && dominated != null) {
+            if(dominant.isDead || dominated.isDead) {
+                setDead();
+                return;
+            }
             posX = (dominant.posX + dominated.posX) /2;
             posY = (dominant.posY + dominated.posY) /2;
             posZ = (dominant.posZ + dominated.posZ) /2;
-            ticksAliveWithNoLinks = 0;
 
             double distSq = dominant.getDistanceSq(dominated);
             double maxDstSq;
@@ -114,11 +143,17 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
                 dominated.motionY += dy * Math.abs(dy) * speed;
                 dominated.motionZ += dz * Math.abs(dz) * speed;
             }
-        } else {
-            ticksAliveWithNoLinks++;
-
-            if(ticksAliveWithNoLinks > MAX_TICKS_WITH_NO_LINKS)
-                setDead();
+        } else { // front and back entities have not been loaded yet
+            if(dominantNBT != null && dominatedNBT != null) {
+                tryToLoadFromNBT(dominantNBT).ifPresent(e -> {
+                    dominant = e;
+                    dataManager.set(DOMINANT_ID, e.getEntityId());
+                });
+                tryToLoadFromNBT(dominatedNBT).ifPresent(e -> {
+                    dominated = e;
+                    dataManager.set(DOMINATED_ID, e.getEntityId());
+                });
+            }
         }
     }
 
@@ -137,27 +172,14 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
         return closest;
     }
 
-    private void readNBT(SpringSide side, NBTTagCompound compound) {
+    private Optional<Entity> tryToLoadFromNBT(NBTTagCompound compound) {
         BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain();
-        pos.setPos(compound.getInteger(side+"X"), compound.getInteger(side+"Y"), compound.getInteger(side+"Z"));
-        String type = compound.getString(side+"Type");
+        pos.setPos(compound.getInteger("X"), compound.getInteger("Y"), compound.getInteger("Z"));
+        String type = compound.getString("Type");
         AxisAlignedBB searchBox = new AxisAlignedBB(pos);
-        List<Entity> entities = world.getEntitiesInAABBexcluding(this, searchBox, e -> e.getClass().getCanonicalName().equals(type));
-        if(!entities.isEmpty()) {
-            Entity linkedEntity = entities.get(0);
-            //dataManager.set(id, linkedEntity.getEntityId());
-
-            switch (side) {
-                case DOMINANT:
-                    dominant = linkedEntity;
-                break;
-
-                case DOMINATED:
-                    dominated = linkedEntity;
-                break;
-            }
-        }
         pos.release();
+        List<Entity> entities = world.getEntitiesInAABBexcluding(this, searchBox, e -> e.getClass().getCanonicalName().equals(type));
+        return entities.stream().findFirst();
     }
 
     @Override
@@ -165,14 +187,22 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
         if(dominant != null && dominated != null) {
             writeNBT(SpringSide.DOMINANT, dominant, compound);
             writeNBT(SpringSide.DOMINATED, dominated, compound);
+        } else {
+            if(dominantNBT != null)
+                compound.setTag(SpringSide.DOMINANT.name(), dominantNBT);
+            if(dominatedNBT != null)
+                compound.setTag(SpringSide.DOMINATED.name(), dominatedNBT);
         }
     }
 
-    private void writeNBT(SpringSide side, @Nonnull Entity entity, NBTTagCompound compound) {
-        compound.setInteger(side+"X", (int)Math.floor(entity.posX));
-        compound.setInteger(side+"Y", (int)Math.floor(entity.posY));
-        compound.setInteger(side+"Z", (int)Math.floor(entity.posZ));
-        compound.setString(side+"Type", entity.getClass().getCanonicalName());
+    private void writeNBT(SpringSide side, @Nonnull Entity entity, NBTTagCompound globalCompound) {
+        NBTTagCompound compound = new NBTTagCompound();
+        compound.setInteger("X", (int)Math.floor(entity.posX));
+        compound.setInteger("Y", (int)Math.floor(entity.posY));
+        compound.setInteger("Z", (int)Math.floor(entity.posZ));
+        compound.setString("Type", entity.getClass().getCanonicalName());
+
+        globalCompound.setTag(side.name(), compound);
     }
 
     @Override
