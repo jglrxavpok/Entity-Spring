@@ -21,19 +21,11 @@ public class EntitySpringAPI {
     private static final BiFunction<Entity, EntitySpring.SpringSide, Vec3d> DEFAULT_ANCHOR_LOCATION = (e, sideArg) -> e.getPositionVector();
     private static final List<Predicate<Entity>> predicates = new ArrayList<>();
     private static final Map<Class<? extends Entity>, BiFunction<Entity, EntitySpring.SpringSide, Vec3d>> mapping = new HashMap<>();
-    public static final BiFunction<Entity, EntitySpring.SpringSide, Vec3d> CART_DEFAULT_ANCHOR_90DEG_OFFSET = (entity, side) -> {
+    public static final BiFunction<Entity, EntitySpring.SpringSide, Vec3d> DEFAULT_BOAT_ANCHOR = (entity, side) -> {
         float distanceFromCenter = 0.0625f * 17f * (side == EntitySpring.SpringSide.DOMINANT ? 1f : -1f);
         double anchorX = entity.posX + MathHelper.cos((float) ((entity.rotationYaw + 90f) * Math.PI / 180f)) * distanceFromCenter;
-        double anchorY = entity.posY;// + 0.0625f * 16f;
+        double anchorY = entity.posY;
         double anchorZ = entity.posZ + MathHelper.sin((float)((entity.rotationYaw + 90f) * Math.PI / 180f)) * distanceFromCenter;
-        return new Vec3d(anchorX, anchorY, anchorZ);
-    };
-
-    public static final BiFunction<Entity, EntitySpring.SpringSide, Vec3d> CART_DEFAULT_ANCHOR = (entity, side) -> {
-        float distanceFromCenter = 0.0625f * 17f * (side == EntitySpring.SpringSide.DOMINANT ? 1f : -1f);
-        double anchorX = entity.posX + MathHelper.cos((float) ((entity.rotationYaw) * Math.PI / 180f)) * distanceFromCenter;
-        double anchorY = entity.posY;// + 0.0625f * 16f;
-        double anchorZ = entity.posZ + MathHelper.sin((float)((entity.rotationYaw) * Math.PI / 180f)) * distanceFromCenter;
         return new Vec3d(anchorX, anchorY, anchorZ);
     };
 
@@ -42,16 +34,7 @@ public class EntitySpringAPI {
         registerTargetPredicate(e -> e instanceof EntityMinecart);
         registerTargetPredicate(e -> e instanceof EntityLivingBase);
 
-        addGenericAnchorMapping(EntityBoat.class, CART_DEFAULT_ANCHOR_90DEG_OFFSET);
-        addGenericAnchorMapping(EntityMinecart.class, CART_DEFAULT_ANCHOR);
-        addGenericAnchorMapping(EntityMinecartChest.class, CART_DEFAULT_ANCHOR);
-        addGenericAnchorMapping(EntityMinecartCommandBlock.class, CART_DEFAULT_ANCHOR);
-        addGenericAnchorMapping(EntityMinecartContainer.class, CART_DEFAULT_ANCHOR);
-        addGenericAnchorMapping(EntityMinecartEmpty.class, CART_DEFAULT_ANCHOR);
-        addGenericAnchorMapping(EntityMinecartFurnace.class, CART_DEFAULT_ANCHOR);
-        addGenericAnchorMapping(EntityMinecartHopper.class, CART_DEFAULT_ANCHOR);
-        addGenericAnchorMapping(EntityMinecartMobSpawner.class, CART_DEFAULT_ANCHOR);
-        addGenericAnchorMapping(EntityMinecartTNT.class, CART_DEFAULT_ANCHOR);
+        addGenericAnchorMapping(EntityBoat.class, DEFAULT_BOAT_ANCHOR);
     }
 
     public static boolean isValidTarget(Entity target) {
@@ -66,7 +49,7 @@ public class EntitySpringAPI {
         mapping.put(entity, function);
     }
 
-    public static <T extends Entity> void addAnchorMapping(Class<T> entity, BiFunction<T, EntitySpring.SpringSide, Vec3d> function) {
+    public static <T extends Entity> void addAnchorMapping(Class<? extends T> entity, BiFunction<T, EntitySpring.SpringSide, Vec3d> function) {
         mapping.put(entity, (e, side) -> function.apply((T) e, side));
     }
 
