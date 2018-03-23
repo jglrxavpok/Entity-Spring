@@ -119,7 +119,7 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
             double distSq = dominant.getDistanceSq(dominated);
             double maxDstSq;
             if(dominated instanceof EntityMinecart && dominant instanceof EntityMinecart && BlockRailBase.isRailBlock(world, dominant.getPosition()))
-                maxDstSq = 0.8;
+                maxDstSq = 1.5;
             else
                 maxDstSq = 9.0;
             if(distSq > maxDstSq) {
@@ -142,6 +142,13 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
                 dominated.motionX += dx * Math.abs(dx) * speed;
                 dominated.motionY += dy * Math.abs(dy) * speed;
                 dominated.motionZ += dz * Math.abs(dz) * speed;
+            }
+
+            if(!world.isRemote && ticksExisted % (20 * 3) == 0) { // send update every 3s to ensure client has infos
+                dataManager.set(DOMINANT_ID, dominant.getEntityId());
+                dataManager.set(DOMINATED_ID, dominated.getEntityId());
+                dataManager.setDirty(DOMINANT_ID);
+                dataManager.setDirty(DOMINATED_ID);
             }
         } else { // front and back entities have not been loaded yet
             if(dominantNBT != null && dominatedNBT != null) {

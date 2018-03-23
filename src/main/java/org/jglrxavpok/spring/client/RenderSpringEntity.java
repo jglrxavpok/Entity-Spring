@@ -56,15 +56,17 @@ public class RenderSpringEntity extends Render<EntitySpring> {
             bufferbuilder
                     .pos(offsetX * (double)f11, offsetY * (double)(f11 * f11 + f11) * 0.5D + 0.25D, offsetZ * (double)f11);
             if(i1 % 2 == 0) {
-                bufferbuilder.color(0x80, 0x80, 0x80, 255);
+                bufferbuilder.color(0x80, (int)((1f-f11)*0x80), (int)((1f-f11)*0x80), 255);
             } else {
-                bufferbuilder.color(0x20, 0x20, 0x20, 255);
+                bufferbuilder.color(0x20, (int)((1f-f11)*0x20), (int)((1f-f11)*0x20), 255);
             }
 
             bufferbuilder.endVertex();
         }
 
+        GlStateManager.glLineWidth(5f);
         tess.draw();
+        GlStateManager.glLineWidth(1f);
         GlStateManager.enableLighting();
         GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
