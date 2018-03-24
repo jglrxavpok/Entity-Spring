@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "entityspring:items/spring"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "firstSelected": 1
+      },
+      "model": "entityspring:item/spring_dominant_selected"
+    }
+  ]
+}

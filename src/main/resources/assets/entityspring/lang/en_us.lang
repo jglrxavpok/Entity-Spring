@@ -1,0 +1,3 @@
+item.spring.description=Select the dominant entity then the dominated entity! (Shift-click removes existing springs)
+item.spring.name=Entity Spring
+item.spring.notToSelf=Cannot link an entity to itself!

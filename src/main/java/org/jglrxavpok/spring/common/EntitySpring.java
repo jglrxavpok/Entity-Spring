@@ -136,7 +136,7 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
 
                 double speed;
                 if(dominated instanceof EntityMinecart && dominant instanceof EntityMinecart)
-                    speed = 1.75;
+                    speed = 1.65;
                 else
                     speed = 0.2;
                 dominated.motionX += dx * Math.abs(dx) * speed;
