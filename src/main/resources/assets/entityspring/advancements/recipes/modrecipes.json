@@ -1,0 +1,21 @@
+{
+  "parent": "entityspring:root",
+  "rewards": {
+    "recipes": [
+      "entityspring:spring"
+    ]
+  },
+  "criteria": {
+    "has_the_lead_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "lead"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_lead_recipe"
+    ]
+  ]
+}
