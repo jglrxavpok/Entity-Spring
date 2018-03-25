@@ -46,6 +46,9 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
         super(dominant.getEntityWorld());
         this.dominant = dominant;
         this.dominated = dominatedEntity;
+        posX = (dominant.posX + dominated.posX)/2;
+        posY = (dominant.posY + dominated.posY)/2;
+        posZ = (dominant.posZ + dominated.posZ)/2;
     }
 
     @Override
@@ -144,7 +147,7 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
                 dominated.motionZ += dz * Math.abs(dz) * speed;
             }
 
-            if(!world.isRemote && ticksExisted % (20 * 3) == 0) { // send update every 3s to ensure client has infos
+            if(!world.isRemote) { // send update every tick to ensure client has infos
                 dataManager.set(DOMINANT_ID, dominant.getEntityId());
                 dataManager.set(DOMINATED_ID, dominated.getEntityId());
                 dataManager.setDirty(DOMINANT_ID);
@@ -254,7 +257,7 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
 
     public static void createSpring(Entity dominantEntity, Entity dominatedEntity) {
         EntitySpring link = new EntitySpring(dominantEntity, dominatedEntity);
-        World world = link.getEntityWorld();
+        World world = dominantEntity.getEntityWorld();
         world.spawnEntity(link);
     }
 

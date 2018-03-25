@@ -12,8 +12,8 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 
 
 version = "1.0"
-group = "org.jglrxavpok.transportlink" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "transportlink"
+group = "org.jglrxavpok.entityspring" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "entityspring"
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
