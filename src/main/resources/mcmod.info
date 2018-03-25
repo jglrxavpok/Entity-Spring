@@ -6,7 +6,7 @@
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
-  "updateUrl": "",
+  "updateUrl": "https://raw.githubusercontent.com/jglrxavpok/Entity-Spring/master/updateCheck.json",
   "authorList": ["jglrxavpok"],
   "credits": "",
   "logoFile": "",

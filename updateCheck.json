@@ -1,0 +1,10 @@
+{
+  "homepage": "https://minecraft.curseforge.com/projects/entity-spring",
+  "1.12.2": {
+    "1.0.1": "* Fixed spring entity spawning in unloaded chunk"
+  },
+  "promos": {
+    "1.12.2-recommended": "1.0.1",
+    "1.12.2-latest": "1.0.1"
+  }
+}
