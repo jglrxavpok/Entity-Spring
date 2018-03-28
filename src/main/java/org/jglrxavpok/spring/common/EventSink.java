@@ -19,10 +19,18 @@ public class EventSink {
     @SubscribeEvent
     public static void entityInteract(PlayerInteractEvent.EntityInteract event) {
         Entity target = event.getTarget();
-        if(!event.getItemStack().isEmpty() && event.getItemStack().getItem() instanceof SpringItem) {
-            if(EntitySpringAPI.isValidTarget(target)) {
-                SpringItem item = (SpringItem) event.getItemStack().getItem();
-                item.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
+        if(!event.getItemStack().isEmpty()) {
+            Item item = event.getItemStack().getItem();
+            if(item instanceof ItemSpring) {
+                if(EntitySpringAPI.isValidTarget(target)) {
+                    ItemSpring itemSpring = (ItemSpring) item;
+                    itemSpring.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
+                    event.setCanceled(true);
+                    event.setCancellationResult(EnumActionResult.SUCCESS);
+                }
+            } else if(item instanceof ItemSpringCutter) {
+                ItemSpringCutter cutter = (ItemSpringCutter) item;
+                cutter.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
                 event.setCanceled(true);
                 event.setCancellationResult(EnumActionResult.SUCCESS);
             }
@@ -31,7 +39,10 @@ public class EventSink {
 
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> evt) {
-        evt.getRegistry().register(EntitySpringMod.instance.springItemInstance);
+        evt.getRegistry().registerAll(
+                EntitySpringMod.instance.itemSpringInstance,
+                EntitySpringMod.instance.cutterItemInstance
+        );
     }
 
     @SubscribeEvent

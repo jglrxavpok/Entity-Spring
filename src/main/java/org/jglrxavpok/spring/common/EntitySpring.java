@@ -5,17 +5,22 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockRailBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityMinecart;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import org.jglrxavpok.spring.EntitySpringAPI;
+import org.jglrxavpok.spring.EntitySpringMod;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -112,7 +117,7 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
         super.onEntityUpdate();
         if(dominant != null && dominated != null) {
             if(dominant.isDead || dominated.isDead) {
-                setDead();
+                kill();
                 return;
             }
             posX = (dominant.posX + dominated.posX) /2;
@@ -264,6 +269,12 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         return TileEntity.INFINITE_EXTENT_AABB;
+    }
+
+    public void kill() {
+        setDead();
+        if(!world.isRemote)
+            InventoryHelper.spawnItemStack(world, posX, posY, posZ, new ItemStack(EntitySpringMod.instance.itemSpringInstance));
     }
 
     public enum SpringSide {

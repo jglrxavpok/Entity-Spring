@@ -24,6 +24,7 @@ public class ESProxyClient extends ESProxyCommon {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void registerModels(ModelRegistryEvent event) {
-        ModelLoader.setCustomModelResourceLocation(EntitySpringMod.instance.springItemInstance, 0, new ModelResourceLocation(EntitySpringMod.MODID+":spring", "inventory"));
+        ModelLoader.setCustomModelResourceLocation(EntitySpringMod.instance.itemSpringInstance, 0, new ModelResourceLocation(EntitySpringMod.MODID+":spring", "inventory"));
+        ModelLoader.setCustomModelResourceLocation(EntitySpringMod.instance.cutterItemInstance, 0, new ModelResourceLocation(EntitySpringMod.MODID+":cutter", "inventory"));
     }
 }

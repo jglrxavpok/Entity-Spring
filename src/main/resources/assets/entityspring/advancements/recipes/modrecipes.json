@@ -2,7 +2,8 @@
   "parent": "entityspring:root",
   "rewards": {
     "recipes": [
-      "entityspring:spring"
+      "entityspring:spring",
+      "entityspring:cutter"
     ]
   },
   "criteria": {

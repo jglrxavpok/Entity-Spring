@@ -1,3 +1,4 @@
-item.spring.description=Sélectionnez l'entité principale puis la secondaire! (Un shift-clic retires les ressorts existants)
+item.spring.description=Sélectionnez l'entité principale puis la secondaire!
 item.spring.name=Ressort à entités
 item.spring.notToSelf=Impossible de connecter une entité à elle-même!
+item.cutter.name=Ciseaux à ressorts

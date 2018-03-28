@@ -17,16 +17,16 @@ import org.jglrxavpok.spring.EntitySpringMod;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class SpringItem extends Item {
+public class ItemSpring extends Item {
 
     private TextComponentTranslation springInfo = new TextComponentTranslation("item.spring.description");
 
-    public SpringItem() {
+    public ItemSpring() {
         setRegistryName(EntitySpringMod.MODID, "spring");
         setCreativeTab(CreativeTabs.TOOLS);
         setUnlocalizedName("spring");
 
-        setMaxStackSize(1);
+        setMaxStackSize(64);
         addPropertyOverride(new ResourceLocation("firstSelected"), (stack, a, b) -> getState(stack) == State.WAITING_NEXT ? 1f : 0f);
     }
 
@@ -34,12 +34,6 @@ public class SpringItem extends Item {
     public void onUsedOnEntity(ItemStack stack, EntityPlayer player, World world, Entity target) {
         if(world.isRemote)
             return;
-        if(player.isSneaking()) {
-            // delete attached springs
-            EntitySpring.streamSpringsAttachedTo(EntitySpring.SpringSide.DOMINANT, target).forEach(Entity::setDead);
-            EntitySpring.streamSpringsAttachedTo(EntitySpring.SpringSide.DOMINATED, target).forEach(Entity::setDead);
-            return;
-        }
         switch(getState(stack)) {
             case WAITING_NEXT: {
                 Entity dominant = getDominant(world, stack);
@@ -50,6 +44,8 @@ public class SpringItem extends Item {
                 } else {
                     // First entity clicked is the dominant
                     EntitySpring.createSpring(dominant, target);
+                    if(!player.isCreative())
+                        stack.shrink(1);
                 }
                 resetLinked(stack);
             }
