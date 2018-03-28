@@ -1,16 +1,16 @@
 package org.jglrxavpok.spring;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.*;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import org.jglrxavpok.spring.common.EntitySpring;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
@@ -29,20 +29,44 @@ public class EntitySpringAPI {
         return new Vec3d(anchorX, anchorY, anchorZ);
     };
 
-    static {
-        registerTargetPredicate(e -> e instanceof EntityBoat);
-        registerTargetPredicate(e -> e instanceof EntityMinecart);
-        registerTargetPredicate(e -> e instanceof EntityLivingBase);
+    public static List<ResourceLocation> defaultBlacklistedEntities = Arrays.asList(
+        new ResourceLocation("item"),
+        new ResourceLocation("xp_orb"),
+        new ResourceLocation("area_effect_cloud"),
+        new ResourceLocation("egg"),
+        new ResourceLocation("leash_knot"),
+        new ResourceLocation("painting"),
+        new ResourceLocation("arrow"),
+        new ResourceLocation("snowball"),
+        new ResourceLocation("fireball"),
+        new ResourceLocation("small_fireball"),
+        new ResourceLocation("ender_pearl"),
+        new ResourceLocation("eye_of_ender_signal"),
+        new ResourceLocation("potion"),
+        new ResourceLocation("xp_bottle"),
+        new ResourceLocation("item_frame"),
+        new ResourceLocation("wither_skull"),
+        new ResourceLocation("spectral_arrow"),
+        new ResourceLocation("shulker_bullet"),
+        new ResourceLocation("dragon_fireball"),
+        new ResourceLocation("dragon_fireball"),
+        new ResourceLocation("llama_spit")
+    );
 
+    static {
         addGenericAnchorMapping(EntityBoat.class, DEFAULT_BOAT_ANCHOR);
     }
 
-    public static boolean isValidTarget(Entity target) {
-        return predicates.parallelStream().anyMatch(e -> e.test(target));
+    private static Set<ResourceLocation> blacklisted = new HashSet<>();
+
+    public static void blacklist(ResourceLocation entityName) {
+        if(!blacklisted.contains(entityName))
+            blacklisted.add(entityName);
     }
 
-    public static void registerTargetPredicate(Predicate<Entity> predicate) {
-        predicates.add(predicate);
+    public static boolean isValidTarget(Entity target) {
+        ResourceLocation targetName = EntityRegistry.getEntry(target.getClass()).getRegistryName();
+        return blacklisted.parallelStream().noneMatch(targetName::equals);
     }
 
     public static void addGenericAnchorMapping(Class<? extends Entity> entity, BiFunction<Entity, EntitySpring.SpringSide, Vec3d> function) {

@@ -1,11 +1,14 @@
 package org.jglrxavpok.spring;
 
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.jglrxavpok.spring.common.ESProxyCommon;
 import org.jglrxavpok.spring.common.SpringItem;
+
+import java.io.*;
 
 @Mod(modid = EntitySpringMod.MODID, name = EntitySpringMod.NAME, version = EntitySpringMod.VERSION)
 public class EntitySpringMod
@@ -23,6 +26,35 @@ public class EntitySpringMod
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
+        try {
+            loadEntityBlacklist(event.getSuggestedConfigurationFile().getParentFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadEntityBlacklist(File configFolder) throws IOException {
+        File whitelist = new File(configFolder, "entity_spring_blacklist.txt");
+        if(!whitelist.getParentFile().exists()) {
+            whitelist.getParentFile().mkdirs();
+        }
+        if(!whitelist.exists()) {
+            whitelist.createNewFile();
+            try(FileWriter writer = new FileWriter(whitelist)) {
+                for(ResourceLocation entity : EntitySpringAPI.defaultBlacklistedEntities) {
+                    writer.write(entity.toString());
+                    writer.write("\n");
+                }
+                writer.flush();
+            }
+        }
+
+        try(BufferedReader reader = new BufferedReader(new FileReader(whitelist))) {
+            reader.lines().forEach(line -> {
+                ResourceLocation correspondingEntityName = new ResourceLocation(line);
+                EntitySpringAPI.blacklist(correspondingEntityName);
+            });
+        }
     }
 
 }
