@@ -41,6 +41,7 @@ public class EntitySpringMod
         if(!whitelist.exists()) {
             whitelist.createNewFile();
             try(FileWriter writer = new FileWriter(whitelist)) {
+                writer.write("#Remove entities at your own risk!\n");
                 for(ResourceLocation entity : EntitySpringAPI.defaultBlacklistedEntities) {
                     writer.write(entity.toString());
                     writer.write("\n");
@@ -51,6 +52,8 @@ public class EntitySpringMod
 
         try(BufferedReader reader = new BufferedReader(new FileReader(whitelist))) {
             reader.lines().forEach(line -> {
+                if(line.startsWith("#"))
+                    return;
                 ResourceLocation correspondingEntityName = new ResourceLocation(line);
                 EntitySpringAPI.blacklist(correspondingEntityName);
             });
