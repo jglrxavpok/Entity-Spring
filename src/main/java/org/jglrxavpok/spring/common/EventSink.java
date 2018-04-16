@@ -7,6 +7,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
@@ -16,9 +17,17 @@ import org.jglrxavpok.spring.EntitySpringMod;
 @Mod.EventBusSubscriber(modid = EntitySpringMod.MODID)
 public class EventSink {
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void entityInteract(PlayerInteractEvent.EntityInteract event) {
-        Entity target = event.getTarget();
+        handleEvent(event, event.getTarget());
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void entitySpecificInteract(PlayerInteractEvent.EntityInteractSpecific event) {
+        handleEvent(event, event.getTarget());
+    }
+
+    private static void handleEvent(PlayerInteractEvent event, Entity target) {
         if(!event.getItemStack().isEmpty()) {
             Item item = event.getItemStack().getItem();
             if(item instanceof ItemSpring) {

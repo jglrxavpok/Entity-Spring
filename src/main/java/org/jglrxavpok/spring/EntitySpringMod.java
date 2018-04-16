@@ -16,7 +16,7 @@ public class EntitySpringMod
 {
     public static final String MODID = "entityspring";
     public static final String NAME = "Entity Spring";
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.1.1";
     @Mod.Instance(MODID)
     public static EntitySpringMod instance;
     public ItemSpring itemSpringInstance = new ItemSpring();
