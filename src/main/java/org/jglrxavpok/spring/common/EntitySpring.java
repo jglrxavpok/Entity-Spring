@@ -145,14 +145,19 @@ public class EntitySpring extends Entity implements IEntityAdditionalSpawnData {
                 float targetYaw = computeTargetYaw(dominated.rotationYaw, frontAnchor, backAnchor);
                 dominated.rotationYaw = (float) (alpha * dominated.rotationYaw + targetYaw * (1f-alpha));
 
-                double speed;
+                /*double speed;
                 if(dominated instanceof EntityMinecart && dominant instanceof EntityMinecart)
                     speed = 1.65;
                 else
                     speed = 0.2;
                 dominated.motionX += dx * Math.abs(dx) * speed;
                 dominated.motionY += dy * Math.abs(dy) * speed;
-                dominated.motionZ += dz * Math.abs(dz) * speed;
+                dominated.motionZ += dz * Math.abs(dz) * speed;*/
+                double k = 0.1;
+                double l0 = 1.5;
+                dominated.motionX += k*(dist-l0)*dx;
+                dominated.motionY += k*(dist-l0)*dy;
+                dominated.motionZ += k*(dist-l0)*dz;
             }
 
             if(!world.isRemote) { // send update every tick to ensure client has infos
