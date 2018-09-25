@@ -1,6 +1,7 @@
 {
   "homepage": "https://minecraft.curseforge.com/projects/entity-spring",
   "1.12.2": {
+    "2.0.1": "* Cutter texture change",
     "2.0.0": "* Springs are now modeled after physical springs and try to find an equilibrium. No more Minecart self-propulsion!",
     "1.1.1": "* Fixed 'incompatibility' with Steve's Cart Reborn (and probably others)",
     "1.1.0": "+ Configurable blacklist\n+Spring cutter to remove springs",
