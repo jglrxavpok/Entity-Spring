@@ -1,15 +1,16 @@
 package org.jglrxavpok.spring.common;
 
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import org.jglrxavpok.spring.EntitySpringMod;
@@ -17,17 +18,15 @@ import org.jglrxavpok.spring.EntitySpringMod;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemSpring extends Item {
+public class SpringItem extends Item {
 
     private TextComponentTranslation springInfo = new TextComponentTranslation("item.spring.description");
 
-    public ItemSpring() {
+    public SpringItem() {
+        super(new Item.Properties().group(ItemGroup.TOOLS).maxStackSize(64));
         setRegistryName(EntitySpringMod.MODID, "spring");
-        setCreativeTab(CreativeTabs.TOOLS);
-        setUnlocalizedName("spring");
 
-        setMaxStackSize(64);
-        addPropertyOverride(new ResourceLocation("firstSelected"), (stack, a, b) -> getState(stack) == State.WAITING_NEXT ? 1f : 0f);
+        addPropertyOverride(new ResourceLocation("first_selected"), (stack, a, b) -> getState(stack) == State.WAITING_NEXT ? 1f : 0f);
     }
 
     // because 'itemInteractionForEntity' is only for Living entities
@@ -43,7 +42,7 @@ public class ItemSpring extends Item {
                     player.sendStatusMessage(new TextComponentTranslation("item.spring.notToSelf"), true);
                 } else {
                     // First entity clicked is the dominant
-                    EntitySpring.createSpring(dominant, target);
+                    SpringEntity.createSpring(dominant, target);
                     if(!player.isCreative())
                         stack.shrink(1);
                 }
@@ -59,25 +58,25 @@ public class ItemSpring extends Item {
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltip.add(springInfo.getUnformattedComponentText());
+        tooltip.add(springInfo);
     }
 
     private void setDominant(World worldIn, ItemStack stack, Entity entity) {
-        nbt(stack).setInteger("linked", entity.getEntityId());
+        nbt(stack).setInt("linked", entity.getEntityId());
     }
 
     private Entity getDominant(World worldIn, ItemStack stack) {
-        int id = nbt(stack).getInteger("linked");
+        int id = nbt(stack).getInt("linked");
         return worldIn.getEntityByID(id);
     }
 
     private NBTTagCompound nbt(ItemStack stack)  {
-        if(stack.getTagCompound() == null) {
-            stack.setTagCompound(new NBTTagCompound());
+        if(stack.getTag() == null) {
+            stack.setTag(new NBTTagCompound());
         }
-        return stack.getTagCompound();
+        return stack.getTag();
     }
 
     private void resetLinked(ItemStack itemstack) {

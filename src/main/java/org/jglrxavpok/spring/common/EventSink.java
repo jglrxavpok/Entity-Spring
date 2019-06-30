@@ -1,20 +1,19 @@
 package org.jglrxavpok.spring.common;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import org.jglrxavpok.spring.EntitySpringAPI;
 import org.jglrxavpok.spring.EntitySpringMod;
 
-@Mod.EventBusSubscriber(modid = EntitySpringMod.MODID)
+@Mod.EventBusSubscriber(modid = EntitySpringMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class EventSink {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -30,15 +29,15 @@ public class EventSink {
     private static void handleEvent(PlayerInteractEvent event, Entity target) {
         if(!event.getItemStack().isEmpty()) {
             Item item = event.getItemStack().getItem();
-            if(item instanceof ItemSpring) {
+            if(item instanceof SpringItem) {
                 if(EntitySpringAPI.isValidTarget(target)) {
-                    ItemSpring itemSpring = (ItemSpring) item;
-                    itemSpring.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
+                    SpringItem springItem = (SpringItem) item;
+                    springItem.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
                     event.setCanceled(true);
                     event.setCancellationResult(EnumActionResult.SUCCESS);
                 }
-            } else if(item instanceof ItemSpringCutter) {
-                ItemSpringCutter cutter = (ItemSpringCutter) item;
+            } else if(item instanceof SpringCutterItem) {
+                SpringCutterItem cutter = (SpringCutterItem) item;
                 cutter.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
                 event.setCanceled(true);
                 event.setCancellationResult(EnumActionResult.SUCCESS);
@@ -49,19 +48,17 @@ public class EventSink {
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> evt) {
         evt.getRegistry().registerAll(
-                EntitySpringMod.instance.itemSpringInstance,
-                EntitySpringMod.instance.cutterItemInstance
+                EntitySpringMod.SPRING,
+                EntitySpringMod.CUTTER
         );
     }
 
     @SubscribeEvent
-    public static void registerEntity(RegistryEvent.Register<EntityEntry> evt) {
-        evt.getRegistry().register(EntityEntryBuilder.create()
-                .entity(EntitySpring.class)
-                .id(new ResourceLocation(EntitySpringMod.MODID, "spring_entity"), 0)
-                .name("spring_entity")
-                .factory(EntitySpring::new)
+    public static void registerEntity(RegistryEvent.Register<EntityType<?>> evt) {
+        EntitySpringMod.SpringType = EntityType.Builder.create(SpringEntity.class, SpringEntity::new)
                 .tracker(64, 3, false)
-                .build());
+                .build("spring_entity")
+                .setRegistryName(new ResourceLocation(EntitySpringMod.MODID, "spring_entity"));
+        evt.getRegistry().register(EntitySpringMod.SpringType);
     }
 }

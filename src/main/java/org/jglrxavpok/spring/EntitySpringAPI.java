@@ -1,14 +1,12 @@
 package org.jglrxavpok.spring;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.item.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import org.jglrxavpok.spring.common.EntitySpring;
+import org.jglrxavpok.spring.common.SpringEntity;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -18,11 +16,11 @@ public class EntitySpringAPI {
     private EntitySpringAPI() {
     }
 
-    private static final BiFunction<Entity, EntitySpring.SpringSide, Vec3d> DEFAULT_ANCHOR_LOCATION = (e, sideArg) -> e.getPositionVector();
+    private static final BiFunction<Entity, SpringEntity.SpringSide, Vec3d> DEFAULT_ANCHOR_LOCATION = (e, sideArg) -> e.getPositionVector();
     private static final List<Predicate<Entity>> predicates = new ArrayList<>();
-    private static final Map<Class<? extends Entity>, BiFunction<Entity, EntitySpring.SpringSide, Vec3d>> mapping = new HashMap<>();
-    public static final BiFunction<Entity, EntitySpring.SpringSide, Vec3d> DEFAULT_BOAT_ANCHOR = (entity, side) -> {
-        float distanceFromCenter = 0.0625f * 17f * (side == EntitySpring.SpringSide.DOMINANT ? 1f : -1f);
+    private static final Map<Class<? extends Entity>, BiFunction<Entity, SpringEntity.SpringSide, Vec3d>> mapping = new HashMap<>();
+    public static final BiFunction<Entity, SpringEntity.SpringSide, Vec3d> DEFAULT_BOAT_ANCHOR = (entity, side) -> {
+        float distanceFromCenter = 0.0625f * 17f * (side == SpringEntity.SpringSide.DOMINANT ? 1f : -1f);
         double anchorX = entity.posX + MathHelper.cos((float) ((entity.rotationYaw + 90f) * Math.PI / 180f)) * distanceFromCenter;
         double anchorY = entity.posY;
         double anchorZ = entity.posZ + MathHelper.sin((float)((entity.rotationYaw + 90f) * Math.PI / 180f)) * distanceFromCenter;
@@ -65,20 +63,20 @@ public class EntitySpringAPI {
     }
 
     public static boolean isValidTarget(Entity target) {
-        ResourceLocation targetName = EntityRegistry.getEntry(target.getClass()).getRegistryName();
+        ResourceLocation targetName = EntityType.getId(target.getType());
         return blacklisted.parallelStream().noneMatch(targetName::equals);
     }
 
-    public static void addGenericAnchorMapping(Class<? extends Entity> entity, BiFunction<Entity, EntitySpring.SpringSide, Vec3d> function) {
+    public static void addGenericAnchorMapping(Class<? extends Entity> entity, BiFunction<Entity, SpringEntity.SpringSide, Vec3d> function) {
         mapping.put(entity, function);
     }
 
-    public static <T extends Entity> void addAnchorMapping(Class<? extends T> entity, BiFunction<T, EntitySpring.SpringSide, Vec3d> function) {
+    public static <T extends Entity> void addAnchorMapping(Class<? extends T> entity, BiFunction<T, SpringEntity.SpringSide, Vec3d> function) {
         mapping.put(entity, (e, side) -> function.apply((T) e, side));
     }
 
-    public static Vec3d calculateAnchorPosition(Entity entity, EntitySpring.SpringSide side) {
-        BiFunction<Entity, EntitySpring.SpringSide, Vec3d> function = mapping.getOrDefault(entity.getClass(), DEFAULT_ANCHOR_LOCATION);
+    public static Vec3d calculateAnchorPosition(Entity entity, SpringEntity.SpringSide side) {
+        BiFunction<Entity, SpringEntity.SpringSide, Vec3d> function = mapping.getOrDefault(entity.getClass(), DEFAULT_ANCHOR_LOCATION);
         return function.apply(entity, side);
     }
 }

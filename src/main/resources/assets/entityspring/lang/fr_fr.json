@@ -1,0 +1,6 @@
+{
+	"item.spring.description": "Sélectionnez l'entité principale puis la secondaire!",
+	"item.entityspring.spring": "Ressort à entités",
+	"item.spring.notToSelf": "Impossible de connecter une entité à elle-même!",
+	"item.entityspring.cutter": "Ciseaux à ressorts"
+}

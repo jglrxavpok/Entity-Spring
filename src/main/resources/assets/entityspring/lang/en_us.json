@@ -1,0 +1,6 @@
+{
+	"item.spring.description": "Select the dominant entity then the dominated entity!",
+	"item.entityspring.spring": "Entity Spring",
+	"item.spring.notToSelf": "Cannot link an entity to itself!",
+	"item.entityspring.cutter": "Spring Cutter"
+}

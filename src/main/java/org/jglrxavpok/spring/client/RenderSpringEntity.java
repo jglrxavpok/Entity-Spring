@@ -6,38 +6,35 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import org.jglrxavpok.spring.EntitySpringMod;
-import org.jglrxavpok.spring.common.EntitySpring;
-import org.lwjgl.util.vector.Quaternion;
+import org.jglrxavpok.spring.common.SpringEntity;
 
 import javax.annotation.Nullable;
 
-public class RenderSpringEntity extends Render<EntitySpring> {
+public class RenderSpringEntity extends Render<SpringEntity> {
 
     public RenderSpringEntity(RenderManager renderManager) {
         super(renderManager);
     }
 
     @Override
-    public void doRender(EntitySpring entity, double x, double y, double z, float entityYaw, float partialTicks) {
+    public void doRender(SpringEntity entity, double x, double y, double z, float entityYaw, float partialTicks) {
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
         if(entity.dominant != null && entity.dominated != null) {
             GlStateManager.pushMatrix();
 
-            Vec3d anchorThis = EntitySpring.calculateAnchorPosition(entity.dominant, EntitySpring.SpringSide.DOMINATED);
-            GlStateManager.translate(anchorThis.x - renderManager.viewerPosX, anchorThis.y - renderManager.viewerPosY, anchorThis.z - renderManager.viewerPosZ);
-            GlStateManager.rotate(-entityYaw, 0f, 1f, 0f);
+            Vec3d anchorThis = SpringEntity.calculateAnchorPosition(entity.dominant, SpringEntity.SpringSide.DOMINATED);
+            GlStateManager.translated(anchorThis.x - renderManager.viewerPosX, anchorThis.y - renderManager.viewerPosY, anchorThis.z - renderManager.viewerPosZ);
+            GlStateManager.rotatef(-entityYaw, 0f, 1f, 0f);
             renderSpring(entity);
             GlStateManager.popMatrix();
         }
     }
 
-    private void renderSpring(EntitySpring spring) {
-        Vec3d anchorThis = EntitySpring.calculateAnchorPosition(spring.dominant, EntitySpring.SpringSide.DOMINATED);
-        Vec3d anchorOther = EntitySpring.calculateAnchorPosition(spring.dominated, EntitySpring.SpringSide.DOMINANT);
+    private void renderSpring(SpringEntity spring) {
+        Vec3d anchorThis = SpringEntity.calculateAnchorPosition(spring.dominant, SpringEntity.SpringSide.DOMINATED);
+        Vec3d anchorOther = SpringEntity.calculateAnchorPosition(spring.dominated, SpringEntity.SpringSide.DOMINANT);
         double offsetX = anchorOther.x - anchorThis.x;
         double offsetY = anchorOther.y - anchorThis.y;
         double offsetZ = anchorOther.z - anchorThis.z;
@@ -64,9 +61,9 @@ public class RenderSpringEntity extends Render<EntitySpring> {
             bufferbuilder.endVertex();
         }
 
-        GlStateManager.glLineWidth(5f);
+        GlStateManager.lineWidth(5f);
         tess.draw();
-        GlStateManager.glLineWidth(1f);
+        GlStateManager.lineWidth(1f);
         GlStateManager.enableLighting();
         GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
@@ -74,7 +71,7 @@ public class RenderSpringEntity extends Render<EntitySpring> {
 
     @Nullable
     @Override
-    protected ResourceLocation getEntityTexture(EntitySpring entity) {
+    protected ResourceLocation getEntityTexture(SpringEntity entity) {
         return null;
     }
 }

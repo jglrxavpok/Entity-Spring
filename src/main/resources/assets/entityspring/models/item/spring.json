@@ -6,7 +6,7 @@
   "overrides": [
     {
       "predicate": {
-        "firstSelected": 1
+        "first_selected": 1
       },
       "model": "entityspring:item/spring_dominant_selected"
     }

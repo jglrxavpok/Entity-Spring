@@ -1,58 +1,78 @@
 package org.jglrxavpok.spring;
 
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import org.jglrxavpok.spring.common.ESProxyCommon;
-import org.jglrxavpok.spring.common.ItemSpringCutter;
-import org.jglrxavpok.spring.common.ItemSpring;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jglrxavpok.spring.client.ClientEventSink;
+import org.jglrxavpok.spring.common.EventSink;
+import org.jglrxavpok.spring.common.SpringItem;
+import org.jglrxavpok.spring.common.SpringCutterItem;
 
 import java.io.*;
 
-@Mod(modid = EntitySpringMod.MODID, name = EntitySpringMod.NAME, version = EntitySpringMod.VERSION)
-public class EntitySpringMod
-{
+@Mod(value = EntitySpringMod.MODID)
+public class EntitySpringMod {
+
     public static final String MODID = "entityspring";
-    public static final String NAME = "Entity Spring";
-    public static final String VERSION = "2.0.1";
-    @Mod.Instance(MODID)
-    public static EntitySpringMod instance;
-    public ItemSpring itemSpringInstance = new ItemSpring();
-    public ItemSpringCutter cutterItemInstance = new ItemSpringCutter();
 
-    @SidedProxy(clientSide = "org.jglrxavpok.spring.client.ESProxyClient", serverSide = "org.jglrxavpok.spring.common.ESProxyCommon")
-    public static ESProxyCommon proxy;
+    public static EntityType<?> SpringType;
+    public static SpringItem SPRING = new SpringItem();
+    public static SpringCutterItem CUTTER = new SpringCutterItem();
 
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        proxy.preInit(event);
+    public static final Logger LOGGER = LogManager.getLogger();
+
+    public EntitySpringMod() {
+        // Register the setup method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        // Register the doClientStuff method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+
+        // Register ourselves for server and other game events we are interested in
+        MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(EventSink.class);
+    }
+
+    private void setup(final FMLCommonSetupEvent event) {
         try {
-            loadEntityBlacklist(event.getSuggestedConfigurationFile().getParentFile());
+            loadEntityBlacklist(new File("./config/"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private void doClientStuff(final FMLClientSetupEvent event) {
+        ClientEventSink.preInit(event);
+    }
+
     private void loadEntityBlacklist(File configFolder) throws IOException {
-        File whitelist = new File(configFolder, "entity_spring_blacklist.txt");
-        if(!whitelist.getParentFile().exists()) {
-            whitelist.getParentFile().mkdirs();
+        File blacklist = new File(configFolder, "entity_spring_blacklist.txt");
+        if(!blacklist.getParentFile().exists()) {
+            blacklist.getParentFile().mkdirs();
         }
-        if(!whitelist.exists()) {
-            whitelist.createNewFile();
-            try(FileWriter writer = new FileWriter(whitelist)) {
-                writer.write("#Remove entities at your own risk!\n");
-                for(ResourceLocation entity : EntitySpringAPI.defaultBlacklistedEntities) {
-                    writer.write(entity.toString());
-                    writer.write("\n");
+        if(!blacklist.exists()) {
+            LOGGER.info("Blacklist file does not exist, creating one at {}", blacklist.getCanonicalPath());
+            if(blacklist.createNewFile()) {
+                try(FileWriter writer = new FileWriter(blacklist)) {
+                    writer.write("#Remove entities at your own risk!\n");
+                    for(ResourceLocation entity : EntitySpringAPI.defaultBlacklistedEntities) {
+                        writer.write(entity.toString());
+                        writer.write("\n");
+                    }
+                    writer.flush();
                 }
-                writer.flush();
+            } else {
+                LOGGER.error("Failed to create blacklist file. OS returned an error");
             }
         }
 
-        try(BufferedReader reader = new BufferedReader(new FileReader(whitelist))) {
+        LOGGER.info("Loading blacklist...");
+        try(BufferedReader reader = new BufferedReader(new FileReader(blacklist))) {
             reader.lines().forEach(line -> {
                 if(line.startsWith("#"))
                     return;

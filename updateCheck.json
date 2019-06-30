@@ -1,5 +1,8 @@
 {
   "homepage": "https://minecraft.curseforge.com/projects/entity-spring",
+  "1.13.2": {
+    "3.0.0": "* Updated to 1.13.2"
+  },
   "1.12.2": {
     "2.0.1": "* Cutter texture change",
     "2.0.0": "* Springs are now modeled after physical springs and try to find an equilibrium. No more Minecart self-propulsion!",
@@ -8,6 +11,9 @@
     "1.0.1": "* Fixed spring entity spawning in unloaded chunk"
   },
   "promos": {
+    "1.13.2-recommended": "3.0.0",
+    "1.13.2-latest": "3.0.0",
+
     "1.12.2-recommended": "2.0.0",
     "1.12.2-latest": "2.0.0"
   }

@@ -1,33 +1,20 @@
 package org.jglrxavpok.spring.common;
 
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import org.jglrxavpok.spring.EntitySpringMod;
 
-import javax.annotation.Nullable;
-import java.util.List;
+public class SpringCutterItem extends Item {
 
-public class ItemSpringCutter extends Item {
-
-    public ItemSpringCutter() {
+    public SpringCutterItem() {
+        super(new Item.Properties().group(ItemGroup.TOOLS).maxStackSize(1).defaultMaxDamage(64));
         setRegistryName(EntitySpringMod.MODID, "cutter");
-        setCreativeTab(CreativeTabs.TOOLS);
-        setUnlocalizedName("cutter");
-
-        setMaxStackSize(1);
-        setMaxDamage(64);
     }
 
     // because 'itemInteractionForEntity' is only for Living entities
@@ -38,7 +25,7 @@ public class ItemSpringCutter extends Item {
         }
         if(!player.isCreative())
             stack.damageItem(1, player);
-        EntitySpring.streamSpringsAttachedTo(EntitySpring.SpringSide.DOMINANT, target).forEach(EntitySpring::kill);
-        EntitySpring.streamSpringsAttachedTo(EntitySpring.SpringSide.DOMINATED, target).forEach(EntitySpring::kill);
+        SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINANT, target).forEach(SpringEntity::kill);
+        SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINATED, target).forEach(SpringEntity::kill);
     }
 }
