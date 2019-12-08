@@ -1,22 +1,24 @@
 package org.jglrxavpok.spring.client;
 
-import net.minecraft.client.renderer.entity.model.ModelBase;
-import net.minecraft.client.renderer.entity.model.ModelRenderer;
+import net.minecraft.client.renderer.entity.model.EntityModel;
+import net.minecraft.client.renderer.entity.model.RendererModel;
+import net.minecraft.client.renderer.model.Model;
 import net.minecraft.entity.Entity;
 
 /**
  * ModelSpring - jglrxavpok
  * Created using Tabula 7.0.0
  */
-public class ModelSpring extends ModelBase {
-    public ModelRenderer spring;
+public class ModelSpring extends EntityModel<Entity> {
+    public RendererModel spring;
 
     public ModelSpring() {
         this.textureWidth = 64;
         this.textureHeight = 32;
-        this.spring = new ModelRenderer(this, 0, 0);
+        this.spring = new RendererModel(this, 0, 0);
         this.spring.setRotationPoint(0.0F, 0.0F, 0.0F);
         this.spring.addBox(-15.0F, -0.5F, -0.5F, 30, 1, 1, 0.0F);
+
     }
 
     @Override
@@ -27,7 +29,7 @@ public class ModelSpring extends ModelBase {
     /**
      * This is a helper function from Tabula to set the rotation of model parts
      */
-    public void setRotateAngle(ModelRenderer modelRenderer, float x, float y, float z) {
+    public void setRotateAngle(RendererModel modelRenderer, float x, float y, float z) {
         modelRenderer.rotateAngleX = x;
         modelRenderer.rotateAngleY = y;
         modelRenderer.rotateAngleZ = z;
