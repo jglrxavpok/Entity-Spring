@@ -1,10 +1,11 @@
 package org.jglrxavpok.spring.client;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.renderer.entity.model.RendererModel;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
@@ -12,9 +13,9 @@ import org.jglrxavpok.spring.common.SpringEntity;
 
 import javax.annotation.Nullable;
 
-public class RenderSpringEntity extends Render<SpringEntity> {
+public class RenderSpringEntity extends EntityRenderer<SpringEntity> {
 
-    public RenderSpringEntity(RenderManager renderManager) {
+    public RenderSpringEntity(EntityRendererManager renderManager) {
         super(renderManager);
     }
 
@@ -25,7 +26,7 @@ public class RenderSpringEntity extends Render<SpringEntity> {
             GlStateManager.pushMatrix();
 
             Vec3d anchorThis = SpringEntity.calculateAnchorPosition(entity.dominant, SpringEntity.SpringSide.DOMINATED);
-            GlStateManager.translated(anchorThis.x - renderManager.viewerPosX, anchorThis.y - renderManager.viewerPosY, anchorThis.z - renderManager.viewerPosZ);
+            GlStateManager.translated(anchorThis.x - renderManager.info.getRenderViewEntity().posX, anchorThis.y - renderManager.info.getRenderViewEntity().posY - renderManager.info.getRenderViewEntity().getEyeHeight(), anchorThis.z - renderManager.info.getRenderViewEntity().posZ);
             GlStateManager.rotatef(-entityYaw, 0f, 1f, 0f);
             renderSpring(entity);
             GlStateManager.popMatrix();
@@ -40,7 +41,7 @@ public class RenderSpringEntity extends Render<SpringEntity> {
         double offsetZ = anchorOther.z - anchorThis.z;
 
         GlStateManager.pushMatrix();
-        GlStateManager.disableTexture2D();
+        GlStateManager.disableTexture();
         GlStateManager.disableLighting();
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tess.getBuffer();
@@ -65,7 +66,7 @@ public class RenderSpringEntity extends Render<SpringEntity> {
         tess.draw();
         GlStateManager.lineWidth(1f);
         GlStateManager.enableLighting();
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
         GlStateManager.popMatrix();
     }
 

@@ -1,9 +1,10 @@
 package org.jglrxavpok.spring.common;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
-import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -34,13 +35,13 @@ public class EventSink {
                     SpringItem springItem = (SpringItem) item;
                     springItem.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
                     event.setCanceled(true);
-                    event.setCancellationResult(EnumActionResult.SUCCESS);
+                    event.setCancellationResult(ActionResultType.SUCCESS);
                 }
             } else if(item instanceof SpringCutterItem) {
                 SpringCutterItem cutter = (SpringCutterItem) item;
                 cutter.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
                 event.setCanceled(true);
-                event.setCancellationResult(EnumActionResult.SUCCESS);
+                event.setCancellationResult(ActionResultType.SUCCESS);
             }
         }
     }
@@ -55,8 +56,11 @@ public class EventSink {
 
     @SubscribeEvent
     public static void registerEntity(RegistryEvent.Register<EntityType<?>> evt) {
-        EntitySpringMod.SpringType = EntityType.Builder.create(SpringEntity.class, SpringEntity::new)
-                .tracker(64, 3, false)
+        EntitySpringMod.SpringType = EntityType.Builder.create((type, world) -> new SpringEntity(world), EntityClassification.MISC)
+                .setTrackingRange(64)
+                .setUpdateInterval(3)
+                .setCustomClientFactory((spawnEntity, world) -> new SpringEntity(world))
+                .setShouldReceiveVelocityUpdates(false)
                 .build("spring_entity")
                 .setRegistryName(new ResourceLocation(EntitySpringMod.MODID, "spring_entity"));
         evt.getRegistry().register(EntitySpringMod.SpringType);

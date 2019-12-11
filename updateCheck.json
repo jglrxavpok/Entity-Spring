@@ -1,5 +1,9 @@
 {
   "homepage": "https://minecraft.curseforge.com/projects/entity-spring",
+  "1.14.4": {
+    "4.0.1": "* Fixed recipes not working",
+    "4.0.0": "* Ported to 1.14.4"
+  },
   "1.13.2": {
     "3.0.0": "* Updated to 1.13.2"
   },
@@ -11,6 +15,9 @@
     "1.0.1": "* Fixed spring entity spawning in unloaded chunk"
   },
   "promos": {
+    "1.14.4-recommended": "4.0.1",
+    "1.14.4-latest": "4.0.1",
+
     "1.13.2-recommended": "3.0.0",
     "1.13.2-latest": "3.0.0",
 

@@ -52,7 +52,7 @@ public class EntitySpringAPI {
     );
 
     static {
-        addGenericAnchorMapping(EntityBoat.class, DEFAULT_BOAT_ANCHOR);
+        addGenericAnchorMapping(BoatEntity.class, DEFAULT_BOAT_ANCHOR);
     }
 
     private static Set<ResourceLocation> blacklisted = new HashSet<>();
@@ -63,7 +63,7 @@ public class EntitySpringAPI {
     }
 
     public static boolean isValidTarget(Entity target) {
-        ResourceLocation targetName = EntityType.getId(target.getType());
+        ResourceLocation targetName = EntityType.getKey(target.getType());
         return blacklisted.parallelStream().noneMatch(targetName::equals);
     }
 

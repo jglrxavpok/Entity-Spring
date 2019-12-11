@@ -1,32 +1,35 @@
 package org.jglrxavpok.spring.common;
 
-import net.minecraft.block.BlockRailBase;
+import net.minecraft.block.AbstractRailBlock;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityMinecart;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.item.minecart.MinecartEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.IPacket;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.network.NetworkHooks;
 import org.jglrxavpok.spring.EntitySpringAPI;
 import org.jglrxavpok.spring.EntitySpringMod;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
@@ -35,8 +38,8 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
     public static final DataParameter<Integer> DOMINANT_ID = EntityDataManager.createKey(SpringEntity.class, DataSerializers.VARINT);
     public static final DataParameter<Integer> DOMINATED_ID = EntityDataManager.createKey(SpringEntity.class, DataSerializers.VARINT);
 
-    private @Nullable NBTTagCompound dominantNBT;
-    private @Nullable NBTTagCompound dominatedNBT;
+    private @Nullable CompoundNBT dominantNBT;
+    private @Nullable CompoundNBT dominatedNBT;
     @Nullable
     public Entity dominant;
     @Nullable
@@ -106,9 +109,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
 
     @Override
     public void baseTick() {
-        motionX = 0.0;
-        motionY = 0.0;
-        motionZ = 0.0;
+        setVelocity(0, 0, 0);
         super.baseTick();
         if(dominant != null && dominated != null) {
             if( ! dominant.isAlive() || ! dominated.isAlive()) {
@@ -121,7 +122,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
 
             double distSq = dominant.getDistanceSq(dominated);
             double maxDstSq;
-            if(dominated instanceof EntityMinecart && dominant instanceof EntityMinecart && BlockRailBase.isRail(world, dominant.getPosition()))
+            if(dominated instanceof MinecartEntity && dominant instanceof MinecartEntity && AbstractRailBlock.isRail(world, dominant.getPosition()))
                 maxDstSq = 1.5;
             else
                 maxDstSq = 9.0;
@@ -147,9 +148,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
                 dominated.motionZ += dz * Math.abs(dz) * speed;*/
                 double k = 0.1;
                 double l0 = 1.5;
-                dominated.motionX += k*(dist-l0)*dx;
-                dominated.motionY += k*(dist-l0)*dy;
-                dominated.motionZ += k*(dist-l0)*dz;
+                dominated.addVelocity(k*(dist-l0)*dx, k*(dist-l0)*dy, k*(dist-l0)*dz);
             }
 
             if(!world.isRemote) { // send update every tick to ensure client has infos
@@ -161,16 +160,12 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
             }
         } else { // front and back entities have not been loaded yet
             if(dominantNBT != null && dominatedNBT != null) {
-                EntitySpringMod.LOGGER.error(">>dominant {}", dominantNBT);
-                EntitySpringMod.LOGGER.error(">>dominated {}", dominatedNBT);
                 tryToLoadFromNBT(dominantNBT).ifPresent(e -> {
                     dominant = e;
-                    EntitySpringMod.LOGGER.error(">>dominant2 {} {}", dominantNBT, e);
                     dataManager.set(DOMINANT_ID, e.getEntityId());
                 });
                 tryToLoadFromNBT(dominatedNBT).ifPresent(e -> {
                     dominated = e;
-                    EntitySpringMod.LOGGER.error(">>dominated2 {} {}", dominatedNBT, e);
                     dataManager.set(DOMINATED_ID, e.getEntityId());
                 });
             }
@@ -192,7 +187,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
         return closest;
     }
 
-    private Optional<Entity> tryToLoadFromNBT(NBTTagCompound compound) {
+    private Optional<Entity> tryToLoadFromNBT(CompoundNBT compound) {
         try(BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain()) {
             pos.setPos(compound.getInt("X"), compound.getInt("Y"), compound.getInt("Z"));
             String type = compound.getString("Type");
@@ -203,32 +198,32 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
     }
 
     @Override
-    protected void readAdditional(NBTTagCompound compound) {
+    protected void readAdditional(CompoundNBT compound) {
         dominantNBT = compound.getCompound(SpringSide.DOMINANT.name());
         dominatedNBT = compound.getCompound(SpringSide.DOMINATED.name());
     }
 
     @Override
-    protected void writeAdditional(NBTTagCompound compound) {
+    protected void writeAdditional(CompoundNBT compound) {
         if(dominant != null && dominated != null) {
             writeNBT(SpringSide.DOMINANT, dominant, compound);
             writeNBT(SpringSide.DOMINATED, dominated, compound);
         } else {
             if(dominantNBT != null)
-                compound.setTag(SpringSide.DOMINANT.name(), dominantNBT);
+                compound.put(SpringSide.DOMINANT.name(), dominantNBT);
             if(dominatedNBT != null)
-                compound.setTag(SpringSide.DOMINATED.name(), dominatedNBT);
+                compound.put(SpringSide.DOMINATED.name(), dominatedNBT);
         }
     }
 
-    private void writeNBT(SpringSide side, @Nonnull Entity entity, NBTTagCompound globalCompound) {
-        NBTTagCompound compound = new NBTTagCompound();
-        compound.setInt("X", (int)Math.floor(entity.posX));
-        compound.setInt("Y", (int)Math.floor(entity.posY));
-        compound.setInt("Z", (int)Math.floor(entity.posZ));
-        compound.setString("Type", entity.getClass().getCanonicalName());
+    private void writeNBT(SpringSide side, Entity entity, CompoundNBT globalCompound) {
+        CompoundNBT compound = new CompoundNBT();
+        compound.putInt("X", (int)Math.floor(entity.posX));
+        compound.putInt("Y", (int)Math.floor(entity.posY));
+        compound.putInt("Z", (int)Math.floor(entity.posZ));
+        compound.putString("Type", entity.getClass().getCanonicalName());
 
-        globalCompound.setTag(side.name(), compound);
+        globalCompound.put(side.name(), compound);
     }
 
     @Override
@@ -238,9 +233,14 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
             buffer.writeInt(dominant.getEntityId());
             buffer.writeInt(dominated.getEntityId());
 
-            NBTTagCompound globalCompound = new NBTTagCompound();
-            writeNBT(SpringSide.DOMINATED, dominated, globalCompound);
-            writeNBT(SpringSide.DOMINANT, dominant, globalCompound);
+            CompoundNBT dominatedNBT = new CompoundNBT();
+            writeNBT(SpringSide.DOMINATED, dominated, dominatedNBT);
+
+            CompoundNBT dominantNBT = new CompoundNBT();
+            writeNBT(SpringSide.DOMINANT, dominant, dominantNBT);
+
+            buffer.writeCompoundTag(dominantNBT);
+            buffer.writeCompoundTag(dominatedNBT);
         } else {
             buffer.writeBoolean(false);
         }
@@ -266,7 +266,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
 
     public static Stream<SpringEntity> streamSpringsAttachedTo(SpringSide side, Entity entity) {
         World world = entity.getEntityWorld();
-        return world.loadedEntityList
+        return getLoadedEntityList(world)
                 .parallelStream()
                 .filter(e -> e instanceof SpringEntity)
                 .map(e -> (SpringEntity)e)
@@ -278,10 +278,21 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
                 });
     }
 
+    private static Collection<Entity> getLoadedEntityList(World world) {
+        if(world instanceof ServerWorld) {
+            return ((ServerWorld) world).getEntities().collect(Collectors.toList());
+        } else {
+            Iterable<Entity> entities = ((ClientWorld)world).getAllEntities();
+            LinkedList<Entity> list = new LinkedList<>();
+            entities.forEach(list::add);
+            return list;
+        }
+    }
+
     public static void createSpring(Entity dominantEntity, Entity dominatedEntity) {
         SpringEntity link = new SpringEntity(dominantEntity, dominatedEntity);
         World world = dominantEntity.getEntityWorld();
-        world.spawnEntity(link);
+        world.addEntity(link);
     }
 
     @Override
@@ -290,8 +301,13 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
     }
 
     @Override
-    public EnumActionResult applyPlayerInteraction(EntityPlayer player, Vec3d vec, EnumHand hand) {
+    public ActionResultType applyPlayerInteraction(PlayerEntity player, Vec3d vec, Hand hand) {
         return super.applyPlayerInteraction(player, vec, hand);
+    }
+
+    @Override
+    public IPacket<?> createSpawnPacket() {
+        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     public void kill() {
