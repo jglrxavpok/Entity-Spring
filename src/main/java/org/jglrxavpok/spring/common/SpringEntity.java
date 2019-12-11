@@ -160,16 +160,12 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
             }
         } else { // front and back entities have not been loaded yet
             if(dominantNBT != null && dominatedNBT != null) {
-                EntitySpringMod.LOGGER.error(">>dominant {}", dominantNBT);
-                EntitySpringMod.LOGGER.error(">>dominated {}", dominatedNBT);
                 tryToLoadFromNBT(dominantNBT).ifPresent(e -> {
                     dominant = e;
-                    EntitySpringMod.LOGGER.error(">>dominant2 {} {}", dominantNBT, e);
                     dataManager.set(DOMINANT_ID, e.getEntityId());
                 });
                 tryToLoadFromNBT(dominatedNBT).ifPresent(e -> {
                     dominated = e;
-                    EntitySpringMod.LOGGER.error(">>dominated2 {} {}", dominatedNBT, e);
                     dataManager.set(DOMINATED_ID, e.getEntityId());
                 });
             }
@@ -316,7 +312,6 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
 
     public void kill() {
         super.remove();
-        System.out.println("ded");
         if(!world.isRemote)
             InventoryHelper.spawnItemStack(world, posX, posY, posZ, new ItemStack(EntitySpringMod.SPRING));
     }

@@ -2,7 +2,10 @@ package org.jglrxavpok.spring;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -30,8 +33,13 @@ public class EntitySpringMod {
     public EntitySpringMod() {
         // Register the setup method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        // Register the doClientStuff method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> {
+            return () -> {
+                // Register the doClientStuff method for modloading
+                FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+            };
+        });
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -46,6 +54,7 @@ public class EntitySpringMod {
         }
     }
 
+    @OnlyIn(Dist.CLIENT)
     private void doClientStuff(final FMLClientSetupEvent event) {
         ClientEventSink.preInit(event);
     }
