@@ -109,7 +109,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
 
     @Override
     public void baseTick() {
-        setVelocity(0, 0, 0);
+        setMotion(0, 0, 0);
         super.baseTick();
         if(dominant != null && dominated != null) {
             if( ! dominant.isAlive() || ! dominated.isAlive()) {
