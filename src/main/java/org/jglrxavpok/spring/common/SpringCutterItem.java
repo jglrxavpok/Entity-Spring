@@ -21,16 +21,25 @@ public class SpringCutterItem extends Item {
     // because 'itemInteractionForEntity' is only for Living entities
     public void onUsedOnEntity(ItemStack stack, PlayerEntity player, World world, Entity target) {
         if(world.isRemote) {
-            world.playSound(target.posX, target.posY, target.posZ, SoundEvents.ENTITY_SHEEP_SHEAR, SoundCategory.PLAYERS, 10f, 1f, false);
+            long count = SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINANT, target).count()
+                    + SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINATED, target).count();
+            if(count > 0) {
+                world.playSound(target.posX, target.posY, target.posZ, SoundEvents.ENTITY_SHEEP_SHEAR, SoundCategory.PLAYERS, 10f, 1f, false);
+            }
             return;
         }
-        if(!player.isCreative())
-            stack.damageItem(1, player, item -> {});
         world.getServer().enqueue(new TickDelayedTask(0, new Runnable() {
             @Override
             public void run() {
-                SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINANT, target).forEach(SpringEntity::kill);
-                SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINATED, target).forEach(SpringEntity::kill);
+                long count = SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINANT, target).count()
+                        + SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINATED, target).count();
+                if(count > 0) {
+                    if(!player.isCreative())
+                        stack.damageItem(1, player, item -> {});
+
+                    SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINANT, target).forEach(SpringEntity::kill);
+                    SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINATED, target).forEach(SpringEntity::kill);
+                }
             }
         }));
 
