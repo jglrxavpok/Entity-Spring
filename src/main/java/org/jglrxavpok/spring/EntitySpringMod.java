@@ -9,6 +9,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jglrxavpok.spring.common.EventSink;
+import org.jglrxavpok.spring.common.SpringEntity;
 import org.jglrxavpok.spring.common.SpringItem;
 import org.jglrxavpok.spring.common.SpringCutterItem;
 
@@ -19,7 +20,7 @@ public class EntitySpringMod {
 
     public static final String MODID = "entityspring";
 
-    public static EntityType<?> SpringType;
+    public static EntityType<SpringEntity> SpringType;
     public static SpringItem SPRING = new SpringItem();
     public static SpringCutterItem CUTTER = new SpringCutterItem();
 

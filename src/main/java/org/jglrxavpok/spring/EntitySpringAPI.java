@@ -21,9 +21,9 @@ public class EntitySpringAPI {
     private static final Map<Class<? extends Entity>, BiFunction<Entity, SpringEntity.SpringSide, Vec3d>> mapping = new HashMap<>();
     public static final BiFunction<Entity, SpringEntity.SpringSide, Vec3d> DEFAULT_BOAT_ANCHOR = (entity, side) -> {
         float distanceFromCenter = 0.0625f * 17f * (side == SpringEntity.SpringSide.DOMINANT ? 1f : -1f);
-        double anchorX = entity.posX + MathHelper.cos((float) ((entity.rotationYaw + 90f) * Math.PI / 180f)) * distanceFromCenter;
-        double anchorY = entity.posY;
-        double anchorZ = entity.posZ + MathHelper.sin((float)((entity.rotationYaw + 90f) * Math.PI / 180f)) * distanceFromCenter;
+        double anchorX = entity.getPosX() + MathHelper.cos((float) ((entity.rotationYaw + 90f) * Math.PI / 180f)) * distanceFromCenter;
+        double anchorY = entity.getPosY();
+        double anchorZ = entity.getPosZ() + MathHelper.sin((float)((entity.rotationYaw + 90f) * Math.PI / 180f)) * distanceFromCenter;
         return new Vec3d(anchorX, anchorY, anchorZ);
     };
 

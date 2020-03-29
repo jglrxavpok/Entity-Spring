@@ -33,13 +33,13 @@ public class EventSink {
             if(item instanceof SpringItem) {
                 if(EntitySpringAPI.isValidTarget(target)) {
                     SpringItem springItem = (SpringItem) item;
-                    springItem.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
+                    springItem.onUsedOnEntity(event.getItemStack(), event.getPlayer(), event.getWorld(), target);
                     event.setCanceled(true);
                     event.setCancellationResult(ActionResultType.SUCCESS);
                 }
             } else if(item instanceof SpringCutterItem) {
                 SpringCutterItem cutter = (SpringCutterItem) item;
-                cutter.onUsedOnEntity(event.getItemStack(), event.getEntityPlayer(), event.getWorld(), target);
+                cutter.onUsedOnEntity(event.getItemStack(), event.getPlayer(), event.getWorld(), target);
                 event.setCanceled(true);
                 event.setCancellationResult(ActionResultType.SUCCESS);
             }
@@ -58,7 +58,7 @@ public class EventSink {
 
         @SubscribeEvent
         public static void registerEntity(RegistryEvent.Register<EntityType<?>> evt) {
-            EntitySpringMod.SpringType = EntityType.Builder.create((type, world) -> new SpringEntity(world), EntityClassification.MISC)
+            EntitySpringMod.SpringType = (EntityType<SpringEntity>) EntityType.Builder.create((type, world) -> new SpringEntity(world), EntityClassification.MISC)
                     .setTrackingRange(64)
                     .setUpdateInterval(3)
                     .setCustomClientFactory((spawnEntity, world) -> new SpringEntity(world))

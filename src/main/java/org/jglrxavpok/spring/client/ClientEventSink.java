@@ -13,7 +13,7 @@ public class ClientEventSink {
 
     @SubscribeEvent
     public static void preInit(FMLClientSetupEvent event) {
-        RenderingRegistry.registerEntityRenderingHandler(SpringEntity.class, RenderSpringEntity::new);
+        RenderingRegistry.registerEntityRenderingHandler(EntitySpringMod.SpringType, RenderSpringEntity::new);
     }
 
 }

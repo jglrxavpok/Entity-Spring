@@ -55,9 +55,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
         super(EntitySpringMod.SpringType, dominant.getEntityWorld());
         this.dominant = dominant;
         this.dominated = dominatedEntity;
-        posX = (dominant.posX + dominated.posX)/2;
-        posY = (dominant.posY + dominated.posY)/2;
-        posZ = (dominant.posZ + dominated.posZ)/2;
+        setPosition((dominant.getPosX() + dominated.getPosX())/2, (dominant.getPosY() + dominated.getPosY())/2, (dominant.getPosZ() + dominated.getPosZ())/2);
     }
 
     @Override
@@ -116,9 +114,8 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
                 kill();
                 return;
             }
-            posX = (dominant.posX + dominated.posX) /2;
-            posY = (dominant.posY + dominated.posY) /2;
-            posZ = (dominant.posZ + dominated.posZ) /2;
+            setPosition((dominant.getPosX() + dominated.getPosX())/2, (dominant.getPosY() + dominated.getPosY())/2, (dominant.getPosZ() + dominated.getPosZ())/2);
+
 
             double distSq = dominant.getDistanceSq(dominated);
             double maxDstSq;
@@ -188,7 +185,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
     }
 
     private Optional<Entity> tryToLoadFromNBT(CompoundNBT compound) {
-        try(BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain()) {
+        try(BlockPos.PooledMutable pos = BlockPos.PooledMutable.retain()) {
             pos.setPos(compound.getInt("X"), compound.getInt("Y"), compound.getInt("Z"));
             String type = compound.getString("Type");
             AxisAlignedBB searchBox = new AxisAlignedBB(pos);
@@ -218,9 +215,9 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
 
     private void writeNBT(SpringSide side, Entity entity, CompoundNBT globalCompound) {
         CompoundNBT compound = new CompoundNBT();
-        compound.putInt("X", (int)Math.floor(entity.posX));
-        compound.putInt("Y", (int)Math.floor(entity.posY));
-        compound.putInt("Z", (int)Math.floor(entity.posZ));
+        compound.putInt("X", (int)Math.floor(entity.getPosX()));
+        compound.putInt("Y", (int)Math.floor(entity.getPosY()));
+        compound.putInt("Z", (int)Math.floor(entity.getPosZ()));
         compound.putString("Type", entity.getClass().getCanonicalName());
 
         globalCompound.put(side.name(), compound);
@@ -313,7 +310,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
     public void kill() {
         super.remove();
         if(!world.isRemote)
-            InventoryHelper.spawnItemStack(world, posX, posY, posZ, new ItemStack(EntitySpringMod.SPRING));
+            InventoryHelper.spawnItemStack(world, getPosX(), getPosY(), getPosZ(), new ItemStack(EntitySpringMod.SPRING));
     }
 
     public enum SpringSide {

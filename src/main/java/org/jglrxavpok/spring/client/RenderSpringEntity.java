@@ -1,17 +1,15 @@
 package org.jglrxavpok.spring.client;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.entity.model.RendererModel;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import org.jglrxavpok.spring.common.SpringEntity;
-
-import javax.annotation.Nullable;
 
 public class RenderSpringEntity extends EntityRenderer<SpringEntity> {
 
@@ -19,60 +17,55 @@ public class RenderSpringEntity extends EntityRenderer<SpringEntity> {
         super(renderManager);
     }
 
+
     @Override
-    public void doRender(SpringEntity entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        super.doRender(entity, x, y, z, entityYaw, partialTicks);
+    public void render(SpringEntity entity, float entityYaw, float p_225623_3_, MatrixStack matrixStack, IRenderTypeBuffer buffers, int light) {
         if(entity.dominant != null && entity.dominated != null) {
-            GlStateManager.pushMatrix();
+            matrixStack.push();
 
             Vec3d anchorThis = SpringEntity.calculateAnchorPosition(entity.dominant, SpringEntity.SpringSide.DOMINATED);
-            GlStateManager.translated(anchorThis.x - renderManager.info.getRenderViewEntity().posX, anchorThis.y - renderManager.info.getRenderViewEntity().posY - renderManager.info.getRenderViewEntity().getEyeHeight(), anchorThis.z - renderManager.info.getRenderViewEntity().posZ);
-            GlStateManager.rotatef(-entityYaw, 0f, 1f, 0f);
-            renderSpring(entity);
-            GlStateManager.popMatrix();
+            matrixStack.translate(-entity.getPosX(), -entity.getPosY(), -entity.getPosZ());
+            matrixStack.translate(anchorThis.x, anchorThis.y, anchorThis.z);
+            matrixStack.rotate(Vector3f.YP.rotationDegrees(-entityYaw));
+            renderSpring(entity, matrixStack, buffers, light);
+            matrixStack.pop();
         }
     }
 
-    private void renderSpring(SpringEntity spring) {
+    @Override
+    public ResourceLocation getEntityTexture(SpringEntity entity) {
+        return null;
+    }
+
+    private void renderSpring(SpringEntity spring, MatrixStack matrixStack, IRenderTypeBuffer buffers, int light) {
         Vec3d anchorThis = SpringEntity.calculateAnchorPosition(spring.dominant, SpringEntity.SpringSide.DOMINATED);
         Vec3d anchorOther = SpringEntity.calculateAnchorPosition(spring.dominated, SpringEntity.SpringSide.DOMINANT);
         double offsetX = anchorOther.x - anchorThis.x;
         double offsetY = anchorOther.y - anchorThis.y;
         double offsetZ = anchorOther.z - anchorThis.z;
 
-        GlStateManager.pushMatrix();
-        GlStateManager.disableTexture();
-        GlStateManager.disableLighting();
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tess.getBuffer();
-        bufferbuilder.begin(3, DefaultVertexFormats.POSITION_COLOR);
+        matrixStack.push();
+        IVertexBuilder bufferbuilder = buffers.getBuffer(RenderType.LINES);
         int l = 32;
 
-        for (int i1 = 0; i1 <= l; ++i1)
+        for (int i1 = 1; i1 <= l; ++i1)
         {
-            float f11 = (float)i1 / l;
-            bufferbuilder
-                    .pos(offsetX * (double)f11, offsetY * (double)(f11 * f11 + f11) * 0.5D + 0.25D, offsetZ * (double)f11);
-            if(i1 % 2 == 0) {
-                bufferbuilder.color(0x80, (int)((1f-f11)*0x80), (int)((1f-f11)*0x80), 255);
-            } else {
-                bufferbuilder.color(0x20, (int)((1f-f11)*0x20), (int)((1f-f11)*0x20), 255);
-            }
-
-            bufferbuilder.endVertex();
+            float step = (float)i1 / l;
+            float stepMinus1 = (float)(i1-1) / l;
+            line(matrixStack, offsetX, offsetY, offsetZ, bufferbuilder, i1-1, stepMinus1);
+            line(matrixStack, offsetX, offsetY, offsetZ, bufferbuilder, i1, step);
         }
-
-        GlStateManager.lineWidth(5f);
-        tess.draw();
-        GlStateManager.lineWidth(1f);
-        GlStateManager.enableLighting();
-        GlStateManager.enableTexture();
-        GlStateManager.popMatrix();
+        matrixStack.pop();
     }
 
-    @Nullable
-    @Override
-    protected ResourceLocation getEntityTexture(SpringEntity entity) {
-        return null;
+    private void line(MatrixStack matrixStack, double offsetX, double offsetY, double offsetZ, IVertexBuilder bufferbuilder, int i1, float step) {
+        bufferbuilder
+                .pos(matrixStack.getLast().getMatrix(), (float)(offsetX * (double)step), (float)(offsetY * (double)(step * step + step) * 0.5D + 0.25D), (float)(offsetZ * (double)step));
+        if(i1 % 2 == 0) {
+            bufferbuilder.color(0x80, (int)((1f-step)*0x80), (int)((1f-step)*0x80), 255);
+        } else {
+            bufferbuilder.color(0x20, (int)((1f-step)*0x20), (int)((1f-step)*0x20), 255);
+        }
+        bufferbuilder.endVertex();
     }
 }

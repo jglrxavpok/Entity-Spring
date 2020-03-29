@@ -24,7 +24,7 @@ public class SpringCutterItem extends Item {
             long count = SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINANT, target).count()
                     + SpringEntity.streamSpringsAttachedTo(SpringEntity.SpringSide.DOMINATED, target).count();
             if(count > 0) {
-                world.playSound(target.posX, target.posY, target.posZ, SoundEvents.ENTITY_SHEEP_SHEAR, SoundCategory.PLAYERS, 10f, 1f, false);
+                world.playSound(target.getPosX(), target.getPosY(), target.getPosZ(), SoundEvents.ENTITY_SHEEP_SHEAR, SoundCategory.PLAYERS, 10f, 1f, false);
             }
             return;
         }
