@@ -14,7 +14,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.jglrxavpok.spring.EntitySpringAPI;
 import org.jglrxavpok.spring.EntitySpringMod;
 
-@Mod.EventBusSubscriber(modid = EntitySpringMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = EntitySpringMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class EventSink {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -46,23 +46,27 @@ public class EventSink {
         }
     }
 
-    @SubscribeEvent
-    public static void registerItems(RegistryEvent.Register<Item> evt) {
-        evt.getRegistry().registerAll(
-                EntitySpringMod.SPRING,
-                EntitySpringMod.CUTTER
-        );
-    }
+    @Mod.EventBusSubscriber(modid = EntitySpringMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class Registration {
+        @SubscribeEvent
+        public static void registerItems(RegistryEvent.Register<Item> evt) {
+            evt.getRegistry().registerAll(
+                    EntitySpringMod.SPRING,
+                    EntitySpringMod.CUTTER
+            );
+        }
 
-    @SubscribeEvent
-    public static void registerEntity(RegistryEvent.Register<EntityType<?>> evt) {
-        EntitySpringMod.SpringType = EntityType.Builder.create((type, world) -> new SpringEntity(world), EntityClassification.MISC)
-                .setTrackingRange(64)
-                .setUpdateInterval(3)
-                .setCustomClientFactory((spawnEntity, world) -> new SpringEntity(world))
-                .setShouldReceiveVelocityUpdates(false)
-                .build("spring_entity")
-                .setRegistryName(new ResourceLocation(EntitySpringMod.MODID, "spring_entity"));
-        evt.getRegistry().register(EntitySpringMod.SpringType);
+        @SubscribeEvent
+        public static void registerEntity(RegistryEvent.Register<EntityType<?>> evt) {
+            EntitySpringMod.SpringType = EntityType.Builder.create((type, world) -> new SpringEntity(world), EntityClassification.MISC)
+                    .setTrackingRange(64)
+                    .setUpdateInterval(3)
+                    .setCustomClientFactory((spawnEntity, world) -> new SpringEntity(world))
+                    .setShouldReceiveVelocityUpdates(false)
+                    .build("spring_entity")
+                    .setRegistryName(new ResourceLocation(EntitySpringMod.MODID, "spring_entity"));
+            evt.getRegistry().register(EntitySpringMod.SpringType);
+        }
+
     }
 }

@@ -41,6 +41,7 @@ public class EntitySpringMod {
             };
         });
 
+        FMLJavaModLoadingContext.get().getModEventBus().register(EventSink.Registration.class);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(EventSink.class);

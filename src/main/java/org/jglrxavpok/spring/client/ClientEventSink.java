@@ -11,7 +11,6 @@ import org.jglrxavpok.spring.EntitySpringMod;
 import org.jglrxavpok.spring.common.SpringEntity;
 
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = EntitySpringMod.MODID)
 public class ClientEventSink {
 
     public static void preInit(FMLClientSetupEvent event) {
