@@ -23,7 +23,7 @@ public class SpringItem extends Item {
     private TranslationTextComponent springInfo = new TranslationTextComponent("item.spring.description");
 
     public SpringItem() {
-        super(new Item.Properties().group(ItemGroup.TOOLS).maxStackSize(64));
+        super(new Item.Properties().group(ItemGroup.TOOLS).maxStackSize(1));
         setRegistryName(EntitySpringMod.MODID, "spring");
 
         addPropertyOverride(new ResourceLocation("first_selected"), (stack, a, b) -> getState(stack) == State.WAITING_NEXT ? 1f : 0f);

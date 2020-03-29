@@ -267,7 +267,7 @@ public class SpringEntity extends Entity implements IEntityAdditionalSpawnData {
     public static Stream<SpringEntity> streamSpringsAttachedTo(SpringSide side, Entity entity) {
         World world = entity.getEntityWorld();
         return getLoadedEntityList(world)
-                .parallelStream()
+                .stream()
                 .filter(e -> e instanceof SpringEntity)
                 .map(e -> (SpringEntity)e)
                 .filter(e -> {

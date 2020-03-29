@@ -64,7 +64,7 @@ public class EntitySpringAPI {
 
     public static boolean isValidTarget(Entity target) {
         ResourceLocation targetName = EntityType.getKey(target.getType());
-        return blacklisted.parallelStream().noneMatch(targetName::equals);
+        return blacklisted.stream().noneMatch(targetName::equals);
     }
 
     public static void addGenericAnchorMapping(Class<? extends Entity> entity, BiFunction<Entity, SpringEntity.SpringSide, Vec3d> function) {
